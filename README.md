@@ -372,15 +372,15 @@ fetch("http://localhost:5001/api/configs", {
 
 ### Main Interface
 
-![Main Interface]()
+![Screenshot 2025-04-23 224345](https://github.com/user-attachments/assets/57f41b0e-c16e-47d6-9940-df191602e228)
 
 ### Simulation Results
 
-![Simulation Results](https://via.placeholder.com/800x450.png?text=Simulation+Results)
+![Screenshot 2025-04-23 224403](https://github.com/user-attachments/assets/8c8045f5-9472-4087-bd06-6578a1621822)
 
 ### Grafana Dashboard
 
-![Grafana Dashboard](https://via.placeholder.com/800x450.png?text=Grafana+Dashboard)
+![Screenshot 2025-04-23 224418](https://github.com/user-attachments/assets/333d5316-5138-470f-87f1-4cb1c2f0bd94)
 
 ## ❓ Troubleshooting
 
