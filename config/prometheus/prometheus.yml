@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # The most reliable way to reach the server from within Docker
+  - job_name: "5g-ran-portal"
+    static_configs:
+      - targets: ["host.docker.internal:5001"]
+    metrics_path: "/metrics"
+    scrape_interval: 5s
+    scrape_timeout: 5s
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

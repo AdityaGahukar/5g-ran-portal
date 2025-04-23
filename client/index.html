@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5G RAN Configuration Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
+    .form-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .result-container {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .toggle-container {
+      margin-bottom: 1rem;
+      text-align: right;
+    }
+
+    .form-check-input {
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>5G RAN Configuration Portal</h1>
+      <p class="lead">Configure 5G Radio Access Network parameters and run simulations</p>
+    </div>
+
+    <div class="form-container">
+      <div class="toggle-container">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="ns3Toggle">
+          <label class="form-check-label" for="ns3Toggle">Use NS-3 Simulation</label>
+        </div>
+        <div id="ns3Status" class="small text-muted">NS-3 is currently disabled</div>
+      </div>
+
+      <form id="ranConfigForm">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="frequency" class="form-label">Frequency (Hz)</label>
+            <input type="number" class="form-control" id="frequency" name="frequency" value="3500000000" required>
+            <div class="form-text">Central carrier frequency in Hz (e.g., 3500000000 for 3.5 GHz)</div>
+          </div>
+          <div class="col-md-6">
+            <label for="bandwidth" class="form-label">Bandwidth (Hz)</label>
+            <input type="number" class="form-control" id="bandwidth" name="bandwidth" value="20000000" required>
+            <div class="form-text">System bandwidth in Hz (e.g., 20000000 for 20 MHz)</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="duplexMode" class="form-label">Duplex Mode</label>
+            <select class="form-select" id="duplexMode" name="duplexMode" required>
+              <option value="TDD">TDD (Time Division Duplex)</option>
+              <option value="FDD">FDD (Frequency Division Duplex)</option>
+            </select>
+            <div class="form-text">Duplex mode for uplink/downlink communication</div>
+          </div>
+          <div class="col-md-6">
+            <label for="transmitPower" class="form-label">Transmit Power (dBm)</label>
+            <input type="number" class="form-control" id="transmitPower" name="transmitPower" value="20" required>
+            <div class="form-text">Transmission power in dBm (e.g., 20 dBm)</div>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary" id="submitBtn">Run Simulation</button>
+        </div>
+      </form>
+
+      <div class="result-container hidden" id="resultContainer">
+        <h3>Simulation Results</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong>Throughput:</strong> <span id="resultThroughput"></span> bps
+            </div>
+            <div class="mb-3">
+              <strong>Latency:</strong> <span id="resultLatency"></span> seconds
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong>Configuration ID:</strong> <span id="resultConfigId"></span>
+            </div>
+            <div class="mb-3">
+              <strong>Created At:</strong> <span id="resultCreatedAt"></span>
+            </div>
+          </div>
+        </div>
+        <div class="d-grid gap-2 mt-3">
+          <a href="http://localhost:3000/dashboards" target="_blank" class="btn btn-primary">Grafana Dashboards</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('ranConfigForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const resultContainer = document.getElementById('resultContainer');
+      const ns3Toggle = document.getElementById('ns3Toggle');
+      const ns3Status = document.getElementById('ns3Status');
+
+      // Check NS-3 status initially
+      fetch('http://localhost:5001/toggle-ns3')
+        .then(response => response.json())
+        .then(data => {
+          ns3Toggle.checked = data.useNs3;
+          ns3Status.textContent = `NS-3 is currently ${data.useNs3 ? 'enabled' : 'disabled'}`;
+        })
+        .catch(err => {
+          console.error('Error checking NS-3 status:', err);
+        });
+
+      // Toggle NS-3 usage
+      ns3Toggle.addEventListener('change', function () {
+        fetch('http://localhost:5001/toggle-ns3')
+          .then(response => response.json())
+          .then(data => {
+            ns3Status.textContent = `NS-3 is currently ${data.useNs3 ? 'enabled' : 'disabled'}`;
+          })
+          .catch(err => {
+            console.error('Error toggling NS-3 usage:', err);
+            alert('Failed to toggle NS-3 usage');
+            // Revert the toggle if there was an error
+            ns3Toggle.checked = !ns3Toggle.checked;
+          });
+      });
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Running Simulation...';
+
+        // Get form values
+        const formData = {
+          frequency: parseFloat(document.getElementById('frequency').value),
+          bandwidth: parseFloat(document.getElementById('bandwidth').value),
+          duplexMode: document.getElementById('duplexMode').value,
+          transmitPower: parseFloat(document.getElementById('transmitPower').value)
+        };
+
+        try {
+          // Send the configuration to the backend
+          const response = await fetch('http://localhost:5001/api/configs', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to run simulation');
+          }
+
+          const data = await response.json();
+
+          // Display the results
+          document.getElementById('resultThroughput').textContent = data.simulationResult.throughput.toLocaleString();
+          document.getElementById('resultLatency').textContent = data.simulationResult.latency;
+          document.getElementById('resultConfigId').textContent = data.config._id;
+          document.getElementById('resultCreatedAt').textContent = new Date(data.config.createdAt).toLocaleString();
+
+          resultContainer.classList.remove('hidden');
+        } catch (error) {
+          alert('Error running simulation: ' + error.message);
+          console.error('Error:', error);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Run Simulation';
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

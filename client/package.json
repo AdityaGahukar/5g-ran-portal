@@ -1,0 +1,13 @@
+{
+  "name": "5g-ran-portal-client",
+  "version": "1.0.0",
+  "description": "Frontend for 5G RAN Configuration Portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+} 

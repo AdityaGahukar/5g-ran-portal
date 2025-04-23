@@ -1,0 +1,57 @@
+# Environment variables
+.env
+.env.*
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build directories
+dist/
+build/
+out/
+
+# Docker volumes
+*_data/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+.directory
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# MongoDB data
+mongodb_data/
+data/db/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Grafana & Prometheus generated data
+grafana_data/
+prometheus_data/
+
+# NS-3 simulation outputs
+simulation_output.json 
